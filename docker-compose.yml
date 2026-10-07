@@ -8,6 +8,7 @@ services:
     ports:
       - "29092:29092"   # accès depuis la machine hôte (localhost:29092)
     environment:
+      CLUSTER_ID: MeteoMarocKafka000001A
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
       KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,PLAINTEXT_HOST://:29092
@@ -21,6 +22,7 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_LOG_DIRS: /var/lib/kafka/data   # sinon /tmp/kafka-logs, hors volume
     volumes:
       - kafka_data:/var/lib/kafka/data
     healthcheck:

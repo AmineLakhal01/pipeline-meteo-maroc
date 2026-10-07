@@ -38,7 +38,7 @@ def create_consumer(retries: int = 30, delay: int = 5) -> KafkaConsumer:
 def process(store: WeatherStore, message: dict, partition: int, offset: int) -> None:
     city = message.get("city")
     if not store.save_raw(message, partition, offset):
-        log.info("%-10s | message déjà stocké (partition %s, offset %s), ignoré", city, partition, offset)
+        log.info("%-10s | message déjà stocké (fetched_at=%s), ignoré", city, message.get("fetched_at"))
         return
     clean, stats = clean_records(flatten_hourly(message))
     inserted, updated = store.upsert_clean(clean)

@@ -33,9 +33,9 @@ class WeatherStore:
         log.info("Connecté à MongoDB, base '%s'", config.MONGO_DB)
 
     def _create_indexes(self) -> None:
-        # (partition, offset) unique : un message Kafka relu n'est pas stocké deux fois
-        self.raw.create_index([("kafka.partition", ASCENDING), ("kafka.offset", ASCENDING)], unique=True)
-        self.raw.create_index([("city", ASCENDING), ("fetched_at", ASCENDING)])
+        # (ville, date de collecte) unique : un message Kafka relu n'est pas stocké deux fois.
+        # On n'utilise pas (partition, offset) : les offsets repartent à 0 si le topic est recréé.
+        self.raw.create_index([("city", ASCENDING), ("fetched_at", ASCENDING)], unique=True)
         # (ville, heure) unique : supprime les doublons entre deux appels API successifs
         self.clean.create_index([("city", ASCENDING), ("time", ASCENDING)], unique=True)
         self.clean.create_index([("city", ASCENDING), ("date", ASCENDING)])

@@ -65,7 +65,7 @@ fuseau `Africa/Casablanca`). Un message Kafka par ville, avec la ville comme cl�
 
 **Consumer** — pour chaque message :
 1. **Brut** : le message est stocké tel quel dans `raw_weather` avec ses métadonnées Kafka
-   (index unique `kafka.partition + kafka.offset` : un message relu n'est jamais stocké deux fois).
+   (index unique `city + fetched_at` : un message relu n'est jamais stocké deux fois).
 2. **Filtrage des champs** : seules les variables `temperature_2m`, `relative_humidity_2m`,
    `precipitation`, `wind_speed_10m`, `weather_code` sont conservées ; les tableaux horaires sont
    transformés en un document par heure.
