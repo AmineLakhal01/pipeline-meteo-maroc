@@ -37,7 +37,7 @@ Ordre de démarrage garanti par les `healthcheck` / `depends_on` :
 | `kafka`         | apache/kafka:3.8.0     | 29092     | Broker Kafka en mode KRaft (sans Zookeeper) |
 | `kafka-init`    | apache/kafka:3.8.0     | –         | Crée le topic `weather_raw` (3 partitions) |
 | `mongodb`       | mongo:7.0              | 27017     | Stockage (utilisateur `admin` / `admin123`) |
-| `mongo-express` | mongo-express:1.0.2    | 8081      | Interface web (connexion `admin` / `pass`) |
+| `mongo-express` | mongo-express:1.0.2    | 8081      | Interface web (sans login, usage local) |
 | `producer`      | build local (Python 3.12) | –      | Appelle Open-Meteo toutes les 60 s et publie dans Kafka |
 | `consumer`      | build local (Python 3.12) | –      | Lit Kafka, nettoie, agrège, écrit dans MongoDB |
 
