@@ -39,7 +39,7 @@ def fetch_weather() -> list[dict]:
     params = {
         "latitude": ",".join(str(config.CITIES[c]["latitude"]) for c in names),
         "longitude": ",".join(str(config.CITIES[c]["longitude"]) for c in names),
-        "hourly": ",".join(config.HOURLY_FIELDS),
+        "hourly": ",".join(config.HOURLY_FIELDS),   # clés du dict = noms des variables Open-Meteo
         "current": ",".join(config.HOURLY_FIELDS),
         "timezone": config.TIMEZONE,
         "past_days": 1,
@@ -51,20 +51,21 @@ def fetch_weather() -> list[dict]:
     if isinstance(data, dict):  # une seule ville -> objet au lieu d'une liste
         data = [data]
 
-    fetched_at = datetime.now(timezone.utc).isoformat()
+    collecte_le = datetime.now(timezone.utc).isoformat()
     messages = []
     for city, payload in zip(names, data):
+        # Enveloppe en français ; le contenu renvoyé par l'API reste brut (non modifié)
         messages.append({
-            "city": city,
-            "fetched_at": fetched_at,
+            "ville": city,
+            "collecte_le": collecte_le,
             "source": "open-meteo",
             "latitude": payload.get("latitude"),
             "longitude": payload.get("longitude"),
-            "timezone": payload.get("timezone"),
-            "elevation": payload.get("elevation"),
-            "current": payload.get("current"),
-            "hourly_units": payload.get("hourly_units"),
-            "hourly": payload.get("hourly"),
+            "fuseau_horaire": payload.get("timezone"),
+            "altitude_m": payload.get("elevation"),
+            "conditions_actuelles": payload.get("current"),
+            "unites_horaires": payload.get("hourly_units"),
+            "donnees_horaires": payload.get("hourly"),
         })
     return messages
 
@@ -75,11 +76,11 @@ def main() -> None:
         try:
             messages = fetch_weather()
             for msg in messages:
-                producer.send(config.KAFKA_TOPIC, key=msg["city"], value=msg)
-                current = msg.get("current") or {}
+                producer.send(config.KAFKA_TOPIC, key=msg["ville"], value=msg)
+                current = msg.get("conditions_actuelles") or {}
                 log.info("Envoyé %-10s | %s | T=%s°C | %d heures",
-                         msg["city"], current.get("time"), current.get("temperature_2m"),
-                         len((msg.get("hourly") or {}).get("time", [])))
+                         msg["ville"], current.get("time"), current.get("temperature_2m"),
+                         len((msg.get("donnees_horaires") or {}).get("time", [])))
             producer.flush()
             log.info("%d messages publiés sur '%s'", len(messages), config.KAFKA_TOPIC)
         except requests.RequestException as exc:

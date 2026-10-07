@@ -1,4 +1,4 @@
-"""Accès MongoDB : 3 collections (brut, nettoyé, agrégats journaliers)."""
+"""Accès MongoDB : 3 collections (brute, nettoyée, statistiques journalières)."""
 import logging
 import time
 from datetime import datetime, timezone
@@ -35,16 +35,16 @@ class WeatherStore:
     def _create_indexes(self) -> None:
         # (ville, date de collecte) unique : un message Kafka relu n'est pas stocké deux fois.
         # On n'utilise pas (partition, offset) : les offsets repartent à 0 si le topic est recréé.
-        self.raw.create_index([("city", ASCENDING), ("fetched_at", ASCENDING)], unique=True)
+        self.raw.create_index([("ville", ASCENDING), ("collecte_le", ASCENDING)], unique=True)
         # (ville, heure) unique : supprime les doublons entre deux appels API successifs
-        self.clean.create_index([("city", ASCENDING), ("time", ASCENDING)], unique=True)
-        self.clean.create_index([("city", ASCENDING), ("date", ASCENDING)])
-        self.daily.create_index([("city", ASCENDING), ("date", ASCENDING)], unique=True)
+        self.clean.create_index([("ville", ASCENDING), ("horodatage", ASCENDING)], unique=True)
+        self.clean.create_index([("ville", ASCENDING), ("date", ASCENDING)])
+        self.daily.create_index([("ville", ASCENDING), ("date", ASCENDING)], unique=True)
 
     def save_raw(self, message: dict, partition: int, offset: int) -> bool:
         doc = {**message,
                "kafka": {"topic": config.KAFKA_TOPIC, "partition": partition, "offset": offset},
-               "ingested_at": datetime.now(timezone.utc)}
+               "insere_le": datetime.now(timezone.utc)}
         try:
             self.raw.insert_one(doc)
             return True
@@ -56,21 +56,21 @@ class WeatherStore:
         if not records:
             return 0, 0
         now = datetime.now(timezone.utc)
-        ops = [UpdateOne({"city": r["city"], "time": r["time"]},
-                         {"$set": {**r, "updated_at": now}},
+        ops = [UpdateOne({"ville": r["ville"], "horodatage": r["horodatage"]},
+                         {"$set": {**r, "mis_a_jour_le": now}},
                          upsert=True)
                for r in records]
         res = self.clean.bulk_write(ops, ordered=False)
         return res.upserted_count, res.matched_count
 
-    def refresh_daily(self, city: str, dates: set[str]) -> list[dict]:
+    def refresh_daily(self, ville: str, dates: set[str]) -> list[dict]:
         """Recalcule les agrégats des jours touchés à partir de TOUTES les heures propres en base."""
-        records = list(self.clean.find({"city": city, "date": {"$in": sorted(dates)}}, {"_id": 0}))
+        records = list(self.clean.find({"ville": ville, "date": {"$in": sorted(dates)}}, {"_id": 0}))
         daily = aggregate_daily(records)
         now = datetime.now(timezone.utc)
         if daily:
             self.daily.bulk_write([
-                UpdateOne({"city": d["city"], "date": d["date"]}, {"$set": {**d, "updated_at": now}}, upsert=True)
+                UpdateOne({"ville": d["ville"], "date": d["date"]}, {"$set": {**d, "mis_a_jour_le": now}}, upsert=True)
                 for d in daily
             ], ordered=False)
         return daily

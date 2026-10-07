@@ -3,26 +3,26 @@
 const d = db.getSiblingDB("meteo_maroc");
 
 print("== Collections et nombre de documents ==");
-["raw_weather", "clean_weather", "daily_weather_stats"].forEach(c => print(c.padEnd(22), d[c].countDocuments()));
+["meteo_brute", "meteo_nettoyee", "stats_journalieres"].forEach(c => print(c.padEnd(20), d[c].countDocuments()));
 
-print("\n== clean_weather : doublons (city, time) ? ==");
-const dup = d.clean_weather.aggregate([
-  { $group: { _id: { c: "$city", t: "$time" }, n: { $sum: 1 } } },
+print("\n== meteo_nettoyee : doublons (ville, horodatage) ? ==");
+const dup = d.meteo_nettoyee.aggregate([
+  { $group: { _id: { v: "$ville", h: "$horodatage" }, n: { $sum: 1 } } },
   { $match: { n: { $gt: 1 } } },
 ]).toArray();
 print(dup.length ? `${dup.length} doublon(s) !` : "aucun doublon");
 
-print("\n== clean_weather : heures par ville ==");
-d.clean_weather.aggregate([{ $group: { _id: "$city", heures: { $sum: 1 } } }, { $sort: { _id: 1 } }])
+print("\n== meteo_nettoyee : heures par ville ==");
+d.meteo_nettoyee.aggregate([{ $group: { _id: "$ville", heures: { $sum: 1 } } }, { $sort: { _id: 1 } }])
   .forEach(r => print(r._id.padEnd(12), r.heures));
 
-print("\n== clean_weather : exemple ==");
-printjson(d.clean_weather.findOne({ city: "Rabat" }, { _id: 0, updated_at: 0 }));
+print("\n== meteo_nettoyee : exemple ==");
+printjson(d.meteo_nettoyee.findOne({ ville: "Rabat" }, { _id: 0, mis_a_jour_le: 0 }));
 
-print("\n== daily_weather_stats ==");
-d.daily_weather_stats.find({}, { _id: 0, city: 1, date: 1, hours_count: 1, temp_min: 1, temp_max: 1, temp_avg: 1, precipitation_total: 1 })
-  .sort({ city: 1, date: 1 }).forEach(r => print(JSON.stringify(r)));
+print("\n== stats_journalieres ==");
+d.stats_journalieres.find({}, { _id: 0, ville: 1, date: 1, nb_heures: 1, temp_min_c: 1, temp_max_c: 1, temp_moy_c: 1, precipitations_total_mm: 1, meteo_dominante: 1 })
+  .sort({ ville: 1, date: 1 }).forEach(r => print(JSON.stringify(r)));
 
-print("\n== raw_weather : champs du dernier document ==");
-const last = d.raw_weather.find().sort({ ingested_at: -1 }).limit(1).toArray()[0];
+print("\n== meteo_brute : champs du dernier document ==");
+const last = d.meteo_brute.find().sort({ insere_le: -1 }).limit(1).toArray()[0];
 if (last) print(Object.keys(last).join(", "), "\n kafka =", JSON.stringify(last.kafka));

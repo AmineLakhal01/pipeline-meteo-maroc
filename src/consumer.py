@@ -36,21 +36,21 @@ def create_consumer(retries: int = 30, delay: int = 5) -> KafkaConsumer:
 
 
 def process(store: WeatherStore, message: dict, partition: int, offset: int) -> None:
-    city = message.get("city")
+    city = message.get("ville")
     if not store.save_raw(message, partition, offset):
-        log.info("%-10s | message déjà stocké (fetched_at=%s), ignoré", city, message.get("fetched_at"))
+        log.info("%-10s | message déjà stocké (collecte_le=%s), ignoré", city, message.get("collecte_le"))
         return
     clean, stats = clean_records(flatten_hourly(message))
     inserted, updated = store.upsert_clean(clean)
     daily = store.refresh_daily(city, {r["date"] for r in clean})
     log.info("%-10s | brut=%d nulls=%d invalides=%d doublons=%d -> propres=%d "
              "(nouvelles=%d, deja_en_base=%d) | jours=%d",
-             city, stats["total"], stats["nulls"], stats["invalid"], stats["duplicates"],
-             stats["clean"], inserted, updated, len(daily))
+             city, stats["total"], stats["nulls"], stats["invalides"], stats["doublons"],
+             stats["propres"], inserted, updated, len(daily))
     for d in daily:
-        log.info("   %s %s : min=%.1f max=%.1f moy=%.1f°C pluie=%.1fmm (%dh)",
-                 d["city"], d["date"], d["temp_min"], d["temp_max"], d["temp_avg"],
-                 d["precipitation_total"], d["hours_count"])
+        log.info("   %s %s : min=%.1f max=%.1f moy=%.1f°C pluie=%.1fmm (%dh) %s",
+                 d["ville"], d["date"], d["temp_min_c"], d["temp_max_c"], d["temp_moy_c"],
+                 d["precipitations_total_mm"], d["nb_heures"], d["meteo_dominante"])
 
 
 def main() -> None:

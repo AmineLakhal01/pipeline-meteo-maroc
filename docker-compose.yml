@@ -43,9 +43,9 @@ services:
     command:
       - >
         /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092
-        --create --if-not-exists --topic ${KAFKA_TOPIC:-weather_raw}
+        --create --if-not-exists --topic ${KAFKA_TOPIC:-meteo_brute}
         --partitions 3 --replication-factor 1 &&
-        /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --describe --topic ${KAFKA_TOPIC:-weather_raw}
+        /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --describe --topic ${KAFKA_TOPIC:-meteo_brute}
     restart: "no"
 
   # ---------------------------------------------------------------- MongoDB
@@ -87,7 +87,7 @@ services:
     command: ["python", "-u", "producer.py"]
     environment: &app_env
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      KAFKA_TOPIC: ${KAFKA_TOPIC:-weather_raw}
+      KAFKA_TOPIC: ${KAFKA_TOPIC:-meteo_brute}
       POLL_INTERVAL_SECONDS: ${POLL_INTERVAL_SECONDS:-60}
       MONGO_URI: mongodb://${MONGO_USER:-admin}:${MONGO_PASSWORD:-admin123}@mongodb:27017/?authSource=admin
       MONGO_DB: ${MONGO_DB:-meteo_maroc}
