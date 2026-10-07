@@ -3,7 +3,7 @@
 # 🌦️ Pipeline de données météo en temps réel — Maroc
 
 **ISGA — Institut Supérieur du Génie Appliqué**
-Cycle Ingénieur — 5ᵉ année
+ 2ᵉ année — Cycle Ingénieur ISI
 Année universitaire 2026 – 2027
 
 **Module :** _à compléter (ex. Big Data / Ingénierie des données)_
