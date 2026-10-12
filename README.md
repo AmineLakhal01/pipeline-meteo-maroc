@@ -6,7 +6,7 @@
  2ᵉ année — Cycle Ingénieur ISI
 Année universitaire 2026 – 2026
 
-**Module :** _à compléter (ex. Big Data / Ingénierie des données)_
+**Module :** Traitement et analyse de données massives (ex. Big Data / Ingénierie des données)_
 **Réalisé par :** Mohamed Amine Lakhal<br>
 **Encadré par :** M. Youness Tabii
 
