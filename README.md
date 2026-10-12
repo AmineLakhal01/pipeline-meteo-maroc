@@ -4,11 +4,11 @@
 
 **ISGA — Institut Supérieur du Génie Appliqué**
  2ᵉ année — Cycle Ingénieur ISI
-Année universitaire 2026 – 2027
+Année universitaire 2026 – 2026
 
 **Module :** _à compléter (ex. Big Data / Ingénierie des données)_
-**Réalisé par :** _Nom Prénom_
-**Encadré par :** _Pr. Nom Prénom_
+**Réalisé par :** Mohamed Amine Lakhal<br>
+**Encadré par :** M. Youness Tabii
 
 </div>
 
